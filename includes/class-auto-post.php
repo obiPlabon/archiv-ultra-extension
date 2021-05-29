@@ -52,7 +52,7 @@ class Auto_Post {
 			
 			$posts = get_posts( $args );
 			foreach ( $posts as $post ) {
-				$title = wp_trim_words( esc_html( $post->post_title ), 2, '...' );
+				$title     = wp_trim_words( esc_html( $post->post_title ), 2, '...' );
 				$sub_title = wp_trim_words( esc_html( $post->post_title ), 3, '' );
 
 				$children[] = [
