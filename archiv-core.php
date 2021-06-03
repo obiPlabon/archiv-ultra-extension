@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || die();
 
 use Archiv_Core\Post_Types;
 use Archiv_Core\Auto_Post;
+use Archiv_Core\Widget;
 
 final class Archiv_Core {
 
@@ -41,14 +42,25 @@ final class Archiv_Core {
 	public function on_plugins_loaded() {
 		$this->include_files();
 		$this->init_classes();
+		$this->register_hooks();
 	}
 
-	public function include_files() {
+	protected function register_hooks() {
+		add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_widgets' ] );
+	}
+
+	public function register_widgets( $widgets_manager ) {
+		include_once $this->plugin_dir . 'includes/class-widget.php';
+
+		$widgets_manager->register_widget_type( new Widget() );
+	}
+
+	protected function include_files() {
 		include_once $this->plugin_dir . 'includes/class-post-types.php';
 		include_once $this->plugin_dir . 'includes/class-auto-post.php';
 	}
 
-	public function init_classes() {
+	protected function init_classes() {
 		$this->post_types = new Post_Types();
 		$this->auto_post  = new Auto_Post();
 	}
