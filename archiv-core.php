@@ -3,7 +3,7 @@
  * Plugin Name: Archiv Core Plugin
  * Description: Added extended Archiv functionality through this plugin.
  * Author: obiPlabon
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author URI: https://obiplabon.im/
  * License:      GNU General Public License v2 or later
  * License URI:  http://www.gnu.org/licenses/gpl-2.0.html
@@ -21,7 +21,7 @@ use Archiv_Core\Widget;
 
 final class Archiv_Core {
 
-	public $version = '1.0.0';
+	public $version = '1.0.1';
 
 	private static $instance = null;
 
