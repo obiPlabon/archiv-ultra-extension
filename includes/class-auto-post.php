@@ -79,7 +79,8 @@ class Auto_Post {
 			$args     = [
 				'post_type'      => Post_Types::VIEWING_ROOM,
 				'post__in'       => $post_ids,
-				'posts_per_page' => 3
+				'posts_per_page' => count( $post_ids ),
+				'orderby'        => 'post__in',
 			];
 			
 			$posts = get_posts( $args );
