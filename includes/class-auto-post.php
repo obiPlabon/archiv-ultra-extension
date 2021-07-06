@@ -25,6 +25,25 @@ class Auto_Post {
 		add_action( 'load-post.php', [ $this, 'setup_redirect' ] );
 
 		add_filter( 'elementor/document/urls/exit_to_dashboard', [ $this, 'update_exit_to_dashboard_url' ], 10, 2 );
+
+		// Load parent viewing room post types only
+		add_filter( 'archiv_main_room_only', [ $this, 'filter_main_room_only' ] );
+	}
+
+	/**
+	 * Update query args and load parent rooms only.
+	 * 
+	 * Use `archiv_main_room_only` filter hook in AE - Post Blocks widget
+	 *
+	 * @param array $args
+	 *
+	 * @return array
+	 */
+	public function filter_main_room_only( $args ) {
+		if ( $args['post_type'] && is_string( $args['post_type'] ) && $args['post_type'] === Post_Types::VIEWING_ROOM ) {
+			$args['post_parent'] = 0;
+		}
+		return $args;
 	}
 
 	/**
