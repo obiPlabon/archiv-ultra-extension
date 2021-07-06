@@ -18,6 +18,89 @@ class Auto_Post {
 		add_action( 'save_post', [ $this, 'on_create_post' ], 10, 2 );
 		add_filter( 'display_post_states', [ $this, 'add_post_states' ], 100, 2 );
 		add_filter( 'elementor/frontend/admin_bar/settings', [ $this, 'add_admin_bar_menu' ], 10, 2 );
+
+		add_filter( 'post_row_actions', [ $this, 'filter_post_row_actions' ], 15, 2 );
+		add_filter( 'page_row_actions', [ $this, 'filter_post_row_actions' ], 15, 2 );
+
+		add_action( 'load-post.php', [ $this, 'setup_redirect' ] );
+
+		add_filter( 'elementor/document/urls/exit_to_dashboard', [ $this, 'update_exit_to_dashboard_url' ], 10, 2 );
+	}
+
+	/**
+	 * Update exit to dashboard url to viewing rooms listings page.
+	 *
+	 * @param string $url
+	 * @param object $document
+	 *
+	 * @return string
+	 */
+	public function update_exit_to_dashboard_url( $url, $document ) {
+		$post = get_post( $document->get_main_id() );
+		if ( empty( $post ) || $post->post_type !== Post_Types::VIEWING_ROOM ) {
+			return $url;
+		}
+		
+		return self_admin_url( add_query_arg( [ 'post_type' => Post_Types::VIEWING_ROOM ], 'edit.php' ) );
+	}
+
+	/**
+	 * Redirect child viewing rooms to elementor editor.
+	 *
+	 * @return void
+	 */
+	public function setup_redirect() {
+		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
+		$action  = isset( $_GET['action'] ) ? $_GET['action'] : '';
+
+		if ( empty( $post_id ) || empty( $action ) || $action !== 'edit' ) {
+			return;
+		}
+
+		$post = get_post( $post_id );
+		if ( empty( $post ) || $post->post_type !== Post_Types::VIEWING_ROOM ) {
+			return;
+		}
+
+		if ( $post->post_parent ) {
+			$url = add_query_arg( [ 'action' => 'elementor' ] );
+			wp_safe_redirect( $url );
+
+			die();
+		}
+	}
+
+	/**
+	 * Remove "Edit" link from child posts and add "Edit with Elementor".
+	 *
+	 * @param array $actions
+	 * @param WP_Post $post
+	 *
+	 * @return array
+	 */
+	public function filter_post_row_actions( $actions, $post ) {
+		if ( empty( $post ) || $post->post_type !== Post_Types::VIEWING_ROOM ) {
+			return $actions;
+		}
+
+		$document = \Elementor\Plugin::instance()->documents->get( $post->ID );
+		if ( empty( $document ) ) {
+			return $actions;
+		}
+
+		if ( $post->post_parent && isset( $actions['edit'] ) ) {
+			unset( $actions['edit'] );
+		}
+ 
+		if ( $document->is_editable_by_current_user() && ! isset( $actions['edit_with_elementor'] ) ) {
+			$actions['edit_with_elementor'] = sprintf(
+				'<a href="%1$s">%2$s</a>',
+				$document->get_edit_url(),
+				__( 'Edit with Elementor', 'archiv-core' )
+			);
+		}
+
+		return $actions;
 	}
 
 	public function on_trash_post( $post_id ) {
@@ -152,8 +235,14 @@ class Auto_Post {
 				'post_type'      => $post->post_type,
 				'post_password'  => $post->post_password,
 				'post_parent'    => $post_id,
+				'meta_input'     => [
+					'_elementor_edit_mode' => 'builder'
+				],
 			] );
 		}
+
+		// Set parent post as elementor post
+		update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
 
 		self::update_sub_posts( $post_id, $sub_posts );
 

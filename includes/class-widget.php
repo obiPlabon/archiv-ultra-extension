@@ -15,17 +15,27 @@ use Elementor\Plugin;
 
 class Widget extends Widget_Base {
 
+	public function __construct( $data = [], $args = null ) {
+		$data['_sample_field'] = rand( 1, 3 );
+		$args['__dummy'] = 1;
+
+		parent::__construct( $data, $args );
+	}
+
 	protected function get_init_settings() {
-		parent::get_init_settings();
+		$settings = parent::get_init_settings();
+		$settings['_sample_field'] = rand( 3, 6 );
 
-		$settings = $this->get_data( 'settings' );
+		// print_r( $settings );
 
-		$c = $this->get_controls( '_sample_field' );
+		// $settings = $this->get_data( 'settings' );
 
-		$control_obj = Plugin::$instance->controls_manager->get_control( $c['type'] );
-		$control = array_merge_recursive( $control_obj->get_settings(), $c );
+		// $c = $this->get_controls( '_sample_field' );
 
-		print_r( get_class_methods( $control_obj ) );
+		// $control_obj = Plugin::$instance->controls_manager->get_control( $c['type'] );
+		// $control = array_merge_recursive( $control_obj->get_settings(), $c );
+
+		// print_r( get_class_methods( $control_obj ) );
 
 		// $settings[ $control['name'] ] = $control_obj->get_value( $control, $settings );
 
