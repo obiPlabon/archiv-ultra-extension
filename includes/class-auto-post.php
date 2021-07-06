@@ -53,7 +53,7 @@ class Auto_Post {
 		$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0;
 		$action  = isset( $_GET['action'] ) ? $_GET['action'] : '';
 
-		if ( empty( $post_id ) || empty( $action ) || $action !== 'edit' ) {
+		if ( empty( $post_id ) || empty( $action ) ) {
 			return;
 		}
 
@@ -63,10 +63,19 @@ class Auto_Post {
 		}
 
 		if ( $post->post_parent ) {
-			$url = add_query_arg( [ 'action' => 'elementor' ] );
-			wp_safe_redirect( $url );
+			if ( $action === 'edit' ) {
+				$url = add_query_arg( [ 'action' => 'elementor' ] );
 
-			die();
+				wp_safe_redirect( $url );
+				die();
+			}
+
+			if ( $action === 'trash' ) {
+				$url = self_admin_url( add_query_arg( [ 'post_type' => Post_Types::VIEWING_ROOM ], 'edit.php' ) );
+
+				wp_safe_redirect( $url );
+				die();
+			}
 		}
 	}
 
@@ -90,6 +99,10 @@ class Auto_Post {
 
 		if ( $post->post_parent && isset( $actions['edit'] ) ) {
 			unset( $actions['edit'] );
+		}
+
+		if ( $post->post_parent && isset( $actions['trash'] ) ) {
+			unset( $actions['trash'] );
 		}
  
 		if ( $document->is_editable_by_current_user() && ! isset( $actions['edit_with_elementor'] ) ) {
@@ -235,14 +248,8 @@ class Auto_Post {
 				'post_type'      => $post->post_type,
 				'post_password'  => $post->post_password,
 				'post_parent'    => $post_id,
-				'meta_input'     => [
-					'_elementor_edit_mode' => 'builder'
-				],
 			] );
 		}
-
-		// Set parent post as elementor post
-		update_post_meta( $post_id, '_elementor_edit_mode', 'builder' );
 
 		self::update_sub_posts( $post_id, $sub_posts );
 
