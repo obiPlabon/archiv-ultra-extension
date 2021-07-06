@@ -25,11 +25,6 @@ class Auto_Post {
 		add_action( 'load-post.php', [ $this, 'setup_redirect' ] );
 
 		add_filter( 'elementor/document/urls/exit_to_dashboard', [ $this, 'update_exit_to_dashboard_url' ], 10, 2 );
-
-		add_action( 'template_redirect', function() {
-			var_dump( get_fields( get_queried_object_id() ) );
-			die();
-		});
 	}
 
 	/**
