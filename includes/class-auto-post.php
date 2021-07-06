@@ -25,6 +25,11 @@ class Auto_Post {
 		add_action( 'load-post.php', [ $this, 'setup_redirect' ] );
 
 		add_filter( 'elementor/document/urls/exit_to_dashboard', [ $this, 'update_exit_to_dashboard_url' ], 10, 2 );
+
+		add_action( 'template_redirect', function() {
+			var_dump( get_fields( get_queried_object_id() ) );
+			die();
+		});
 	}
 
 	/**
@@ -226,11 +231,21 @@ class Auto_Post {
 
 		$sub_posts = self::get_sub_posts( $post_id );
 		if ( ! empty( $sub_posts ) && count( $sub_posts ) > 0 ) {
+			// Get all acf fields from parent
+			$acf_fields = function_exists( 'get_fields' ) ? get_fields( $post_id ) : [];
+
 			foreach ( $sub_posts as $sub_post ) {
 				wp_update_post( [
 					'ID'          => $sub_post,
 					'post_status' => $post->post_status,
 				] );
+				
+				// Copy acf fields from parent -> child
+				if ( $acf_fields && function_exists( 'update_field' ) ) {
+					foreach ( $acf_fields as $field_key => $field_value ) {
+						update_field( $field_key, $field_value, $sub_post );
+					}
+				}
 			}
 
 			return;
