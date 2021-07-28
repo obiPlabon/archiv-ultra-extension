@@ -43,21 +43,50 @@ final class Archiv_Core {
 		$this->include_files();
 		$this->init_classes();
 		$this->register_hooks();
+
+		// add_action( 'elementor/element/before_section_start', function( $widget, $section_id, $args ) {
+		// 	file_put_contents( __DIR__ . '/data2.txt', get_class( $widget ) . "\n", FILE_APPEND );
+		// }, 10, 3 );
+
+		// add_filter( 'elementor/editor/localize_settings', function ( $config ) {
+    
+			// 'text-editor' is the Text Editor widget
+			// 'heading' is the Heading widget
+			// @see get_name method in widget class
+			
+			// file_put_contents( __DIR__ . '/data.txt', print_r( array_keys( $config['initial_document']['widgets'] ), 1 ), FILE_APPEND );
+
+			// $config['widgets']['icon-box']['categories'] = [ 'common' ];
+			
+			// return $config;
+		// }, 20 );
 	}
 
 	protected function register_hooks() {
-		add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_widgets' ] );
+		add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_widgets' ], 15 );
 	}
 
 	public function register_widgets( $widgets_manager ) {
-		include_once $this->plugin_dir . 'includes/class-widget.php';
+		// include_once $this->plugin_dir . 'includes/class-widget.php';
+		include_once $this->plugin_dir . 'includes/class-xwp-widget.php';
 
-		$widgets_manager->register_widget_type( new Widget() );
+		// global $wp_widget_factory;
+		// $page_widget = $wp_widget_factory->widgets['WP_Widget_Pages'];
+
+		// $widgets_manager->register_widget_type( new Widget() );
+		// $widgets_manager->unregister_widget_type( 'wp-widget-pages' );
+
+		// $widgets_manager->register_widget_type(
+		// 	new Archiv_Core\XWP_Widget( [], [
+		// 		'widget_name' => 'WP_Widget_Pages',
+		// 	] )
+		// );
 	}
 
 	protected function include_files() {
 		include_once $this->plugin_dir . 'includes/class-post-types.php';
 		include_once $this->plugin_dir . 'includes/class-auto-post.php';
+		include_once $this->plugin_dir . 'includes/class-wp-menu-widget.php';
 	}
 
 	protected function init_classes() {
