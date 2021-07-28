@@ -2,10 +2,10 @@
 /**
  * WP menu widget class.
  * 
- * @package Archiv_Core
+ * @package Archiv_Ultra_Extension
  */
 
-namespace Archiv_Core;
+namespace Archiv_Ultra_Extension;
 
 defined( 'ABSPATH' ) || die();
 
@@ -68,7 +68,7 @@ class WP_Menu_Widget extends WP_Widget {
 
 	public function update( $new_instance, $old_instance ) {
 		$instance = array();
-		file_put_contents( __DIR__ . '/data.txt', print_r( $new_instance, 1), FILE_APPEND );
+		// file_put_contents( __DIR__ . '/data.txt', print_r( $new_instance, 1), FILE_APPEND );
 		return $instance;
 	}
 }

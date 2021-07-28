@@ -2,16 +2,15 @@
 /**
  * Navigation widget.
  * 
- * @package Archiv_Core
+ * @package Archiv_Ultra_Extension
  */
 
-namespace Archiv_Core;
+namespace Archiv_Ultra_Extension;
 
 defined( 'ABSPATH' ) || die();
 
 use Elementor\Widget_WordPress;
 use Elementor\Controls_Manager;
-// use Elementor\Plugin;
 
 class XWP_Widget extends Widget_WordPress {
     protected function register_controls() {
@@ -26,19 +25,10 @@ class XWP_Widget extends Widget_WordPress {
 		);
 
 		$this->start_controls_section(
-			'content_section2',
+			'_section_nav_style',
 			[
-				'label' => __( 'Content2', 'plugin-name' ),
+				'label' => __( 'Nav Style', 'plugin-name' ),
                 'tab' => Controls_Manager::TAB_STYLE,
-			]
-		);
-
-		$this->add_control(
-			'title',
-			[
-				'label' => __( 'Title', 'plugin-name' ),
-				'type' => Controls_Manager::TEXT,
-				'placeholder' => __( 'Enter your title', 'plugin-name' ),
 			]
 		);
 

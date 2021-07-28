@@ -77,7 +77,7 @@ final class Archiv_Ultra_Extension {
 		// $widgets_manager->unregister_widget_type( 'wp-widget-pages' );
 
 		// $widgets_manager->register_widget_type(
-		// 	new Archiv_Core\XWP_Widget( [], [
+		// 	new Archiv_Ultra_Extension\XWP_Widget( [], [
 		// 		'widget_name' => 'WP_Widget_Pages',
 		// 	] )
 		// );
