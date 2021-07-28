@@ -2,10 +2,10 @@
 /**
  * Post types class.
  * 
- * @package Archiv_Core
+ * @package Archiv_Ultra_Extension
  */
 
-namespace Archiv_Core;
+namespace Archiv_Ultra_Extension;
 
 defined( 'ABSPATH' ) || die();
 

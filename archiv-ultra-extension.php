@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: Archiv Core Plugin
- * Description: Added extended Archiv functionality through this plugin.
+ * Plugin Name: Archiv Ultra Extension
+ * Description: Your extended Archiv functionality lives here. So please do not uninstall or delete it without being confirmed.
  * Author: obiPlabon
  * Version: 1.0.2
  * Author URI: https://obiplabon.im/
@@ -10,16 +10,16 @@
  * Text Domain: archiv-core
  * Domain Path: includes/languages/
  *
- * @package Archiv_Core
+ * @package Archiv_Ultra_Extension
  */
 
 defined( 'ABSPATH' ) || die();
 
-use Archiv_Core\Post_Types;
-use Archiv_Core\Auto_Post;
-use Archiv_Core\Widget;
+use Archiv_Ultra_Extension\Post_Types;
+use Archiv_Ultra_Extension\Auto_Post;
+use Archiv_Ultra_Extension\Widget;
 
-final class Archiv_Core {
+final class Archiv_Ultra_Extension {
 
 	public $version = '1.0.2';
 
@@ -95,8 +95,8 @@ final class Archiv_Core {
 	}
 }
 
-function archiv_core() {
-	return Archiv_Core::instance();
+function archiv_ultra_extension() {
+	return Archiv_Ultra_Extension::instance();
 }
 
-archiv_core();
+archiv_ultra_extension();
