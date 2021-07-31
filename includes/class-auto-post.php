@@ -167,6 +167,15 @@ class Auto_Post {
 		}
 	}
 
+	protected function get_edit_url( $id ) {
+		$url = add_query_arg( [
+			'post'   => $id,
+			'action' => 'elementor',
+		], admin_url( 'post.php' ) );
+
+		return $url;
+	}
+
 	public function add_admin_bar_menu( $settings ) {
 		if ( ! is_singular( Post_Types::VIEWING_ROOM ) ) {
 			return $settings;
@@ -208,7 +217,7 @@ class Auto_Post {
 					'title'     => $title,
 					'id'        => "elementor_edit_doc_{$post->ID}",
 					'sub_title' => ( $post->ID !== $parent_post_id ? $sub_title : $this->get_base_post() ),
-					'href'      => get_the_permalink( $post->ID ),
+					'href'      => $this->get_edit_url( $post->ID ),
 				];
 			}
 
