@@ -66,13 +66,13 @@ final class Archiv_Ultra_Extension {
 	}
 
 	public function register_widgets( $widgets_manager ) {
-		include_once $this->plugin_dir . 'includes/class-xwp-widget.php';
+		include_once $this->plugin_dir . 'includes/class-widget-factory.php';
 
 		$widgets_manager->unregister_widget_type( 'wp-widget-archiv-menu' );
 
 		$widgets_manager->register_widget_type(
-			new Archiv_Ultra_Extension\XWP_Widget( [], [
-				'widget_name' => '\Archiv_Ultra_Extension\WP_Menu_Widget',
+			new Archiv_Ultra_Extension\Widget_Factory( [], [
+				'widget_name' => '\\Archiv_Ultra_Extension\\Archiv_Menu',
 			] )
 		);
 	}
@@ -80,7 +80,7 @@ final class Archiv_Ultra_Extension {
 	protected function include_files() {
 		include_once $this->plugin_dir . 'includes/class-post-types.php';
 		include_once $this->plugin_dir . 'includes/class-auto-post.php';
-		include_once $this->plugin_dir . 'includes/class-wp-menu-widget.php';
+		include_once $this->plugin_dir . 'includes/class-archiv-menu.php';
 
 		if ( is_user_logged_in() ) {
 			include_once $this->plugin_dir . 'includes/class-ajax.php';

@@ -1,6 +1,6 @@
 <?php
 /**
- * WP menu widget class.
+ * Archiv menu widget class.
  * 
  * @package Archiv_Ultra_Extension
  */
@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || die();
 
 use WP_Widget;
 
-class WP_Menu_Widget extends WP_Widget {
+class Archiv_Menu extends WP_Widget {
 	public function __construct() {
 		parent::__construct(
 			'archiv-menu',
@@ -112,5 +112,5 @@ class WP_Menu_Widget extends WP_Widget {
 }
 
 add_action( 'widgets_init', function() {
-	register_widget( __NAMESPACE__ . '\\WP_Menu_Widget');
+	register_widget( __NAMESPACE__ . '\\Archiv_Menu');
 } );

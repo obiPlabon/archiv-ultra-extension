@@ -1,6 +1,6 @@
 <?php
 /**
- * Navigation widget.
+ * Elementor archiv widget factory class.
  * 
  * @package Archiv_Ultra_Extension
  */
@@ -12,7 +12,8 @@ defined( 'ABSPATH' ) || die();
 use Elementor\Widget_WordPress;
 use Elementor\Controls_Manager;
 
-class XWP_Widget extends Widget_WordPress {
+class Widget_Factory extends Widget_WordPress {
+	
     protected function register_controls() {
 		$this->add_control(
 			'wp',
