@@ -32,14 +32,50 @@ final class Archiv_Ultra_Extension {
 		$this->plugin_url = plugin_dir_url( __FILE__ );
 		$this->plugin_dir = plugin_dir_path( __FILE__ );
 
-		$this->version = time();
+		$this->version = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? time() : '1.0.2';
 
-		add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ] );
+		add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ], 20 );
 	}
 
 	public function on_plugins_loaded() {
+		if ( ! did_action( 'elementor/loaded' ) ) {
+			add_action( 'admin_notices', [ $this, 'elementor_missing_notice' ] );
+			return;
+		}
+
 		$this->include_files();
 		$this->register_hooks();
+	}
+
+	public function elementor_missing_notice() {
+		if ( current_user_can( 'install_plugins' ) || current_user_can( 'activate_plugins' ) ) {
+			$plugin_slug = 'elementor';
+			$plugin_file = "{$plugin_slug}/elementor.php";
+	
+			if ( file_exists( trailingslashit( WP_PLUGIN_DIR ) . $plugin_file ) ) {
+				$notice_title = __( 'Activate Elementor', 'archiv' );
+				$notice_url   = wp_nonce_url(
+					"plugins.php?action=activate&plugin={$plugin_file}&plugin_status=all&paged=1",
+					"activate-plugin_{$plugin_file}"
+				);
+			} else {
+				$notice_title = __( 'Install Elementor', 'archiv' );
+				$notice_url = wp_nonce_url(
+					self_admin_url( "update.php?action=install-plugin&plugin={$plugin_slug}" ),
+					"install-plugin_{$plugin_slug}"
+				);
+			}
+	
+			$notice = wp_kses_data( sprintf(
+				/* translators: 1: Plugin name 2: Elementor 3: Elementor installation link */
+				__( '%1$s requires %2$s to be installed and activated to function properly. %3$s', 'archiv' ),
+				'<strong>' . __( 'Archiv Ultra Extension', 'archiv' ) . '</strong>',
+				'<strong>' . __( 'Elementor', 'archiv' ) . '</strong>',
+				'<a href="' . esc_url( $notice_url ) . '">' . $notice_title . '</a>'
+			) );
+	
+			printf( '<div class="notice notice-warning is-dismissible"><p>%1$s</p></div>', $notice );
+		}
 	}
 
 	protected function register_hooks() {
