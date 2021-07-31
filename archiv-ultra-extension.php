@@ -106,6 +106,7 @@ final class Archiv_Ultra_Extension {
 
 		if ( is_user_logged_in() ) {
 			include_once $this->plugin_dir . 'includes/class-ajax.php';
+			include_once $this->plugin_dir . 'includes/class-elementor.php';
 		}
 	}
 

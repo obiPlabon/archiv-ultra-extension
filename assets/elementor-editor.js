@@ -18,7 +18,7 @@
                 }
             } );
 
-            $archivSelect2.select2({
+            $archivSelect2.select2( {
                 minimumInputLength: 2,
                 ajax: {
                     url: Archiv.endpoint,
@@ -59,10 +59,12 @@
                     }
 
                     $( '.archiv-fields__single' ).each( function( index, item ) {
-                        var data = response.data[ index ];
-                        $( item ).find('.archiv-fields__field-title').val( data.title ).trigger('change');
-                        $( item ).find('.archiv-fields__field-slug').val( data.slug );
-                        $( item ).find('.archiv-fields__field-id').val( data.id );
+                        var data = response.data[ index ],
+                            $item = $( item );
+
+                        $item.find('.archiv-fields__field-title').val( data.title ).trigger('change');
+                        $item.find('.archiv-fields__field-slug').val( data.slug );
+                        $item.find('.archiv-fields__field-id').val( data.id );
                     } );
                 } );
             } );

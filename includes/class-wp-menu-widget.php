@@ -10,7 +10,6 @@ namespace Archiv_Ultra_Extension;
 defined( 'ABSPATH' ) || die();
 
 use WP_Widget;
-use Elementor\Plugin;
 
 class WP_Menu_Widget extends WP_Widget {
 	public function __construct() {
@@ -18,10 +17,6 @@ class WP_Menu_Widget extends WP_Widget {
 			'archiv-menu',
 			__( 'Archiv Viewing Rooms', 'archiv' )
 		);
- 
-		add_action( 'widgets_init', function() {
-			register_widget( __CLASS__ );
-		} );
 
 		add_action( 'admin_enqueue_scripts', function() {
 			wp_enqueue_style(
@@ -38,53 +33,6 @@ class WP_Menu_Widget extends WP_Widget {
 				archiv_ultra_extension()->version
 			);
 		} );
-
-		add_action( 'elementor/editor/after_enqueue_styles', function() {
-			wp_enqueue_style(
-				'archiv-menu',
-				archiv_ultra_extension()->plugin_url . 'assets/admin-style.css',
-				['elementor-select2'],
-				archiv_ultra_extension()->version
-			);
-
-			wp_enqueue_script(
-				'archiv-menu',
-				archiv_ultra_extension()->plugin_url . 'assets/elementor-editor.js',
-				[ 'jquery', 'jquery-ui-sortable', 'jquery-elementor-select2' ],
-				archiv_ultra_extension()->version
-			);
-
-			wp_localize_script(
-				'archiv-menu',
-				'Archiv',
-				[
-					'endpoint' => admin_url( 'admin-ajax.php' ),
-					'nonce'    => wp_create_nonce( 'archiv_ajax_nonce' ),
-					'action'   => 'archiv_get_viewing_rooms'
-				]
-			);
-		} );
-
-		// add_action( 'elementor/editor/after_save', function( $post_id, $data ) {
-		// 	if ( empty( $data ) ) {
-		// 		$document = Plugin::instance()->documents->get( $post_id );
-		// 		$data = $document ? $document->get_elements_data() : [];
-		// 	}
-
-		// 	Plugin::instance()->db->iterate_data( $data, function ( $element ) use ( &$cache ) {
-		// 		$type = $this->get_widget_type( $element );
-	
-		// 		if ( strpos( $type, 'ha-' ) !== false ) {
-		// 			if ( ! isset( $cache[ $type ] ) ) {
-		// 				$cache[ $type ] = 0;
-		// 			}
-		// 			$cache[ $type ] ++;
-		// 		}
-	
-		// 		return $element;
-		// 	} );
-			
-		// }, 10, 2 );
 	}
 
 	public function widget( $args, $instance ) {
@@ -145,7 +93,7 @@ class WP_Menu_Widget extends WP_Widget {
 				<input class="widefat archiv-fields__field-slug" id="<?php echo esc_attr( $this->get_field_id( $prefix . '[slug]' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[slug]' ) ); ?>" type="text" value="<?php echo esc_attr( $data['slug'] ); ?>">
 			</div>
 			<input class="archiv-fields__field-id" type="hidden" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[id]' ) ); ?>" value="<?php echo esc_attr( $data['id'] ); ?>">
-			<input class="archiv-fields__field-index" type="hidden" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[_index]' ) ); ?>" value="<?php echo $index; ?>">
+			<input class="archiv-fields__field-index" type="hidden" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[_index]' ) ); ?>" value="<?php echo ( $index + 1 ); ?>">
 		</li>
 		<?php
 	}
@@ -163,4 +111,6 @@ class WP_Menu_Widget extends WP_Widget {
 	}
 }
 
-return new WP_Menu_Widget();
+add_action( 'widgets_init', function() {
+	register_widget( __NAMESPACE__ . '\\WP_Menu_Widget');
+} );
