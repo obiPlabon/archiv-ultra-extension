@@ -34,20 +34,54 @@ class Archiv_Menu extends WP_Widget {
 				archiv_ultra_extension()->version
 			);
 		} );
+
+		add_action( 'elementor/preview/enqueue_scripts', function() {
+			wp_enqueue_script(
+				'archiv-menu-preview',
+				archiv_ultra_extension()->plugin_url . 'assets/elementor-preview.js',
+				[ 'elementor-frontend' ],
+				archiv_ultra_extension()->version,
+				true
+			);
+		} );
+	}
+
+	protected function have_rooms( $rooms ) {
+		if ( empty( $rooms ) ) {
+			return false;
+		}
+
+		$have_rooms = array_filter( $rooms, function( $room ) {
+			return ! empty( $room['id'] );
+		} );
+
+		return count( $have_rooms );
 	}
 
 	public function widget( $args, $instance ) {
 		$rooms = ( ! empty( $instance['viewing_rooms'] ) && is_array( $instance['viewing_rooms'] ) ) ? $instance['viewing_rooms'] : [];
 
-		if ( empty( $rooms ) ) {
-			return '';
+		if ( ! $this->have_rooms( $rooms ) ) {
+			return;
 		}
 
-		if ( is_admin() || ( isset( $_GET['action'] ) && $_GET['action'] === 'elementor' ) ) {
+		if ( is_admin() ||
+			! empty( $_GET['elementor-preview'] ) ||
+			( isset( $_GET['action'] ) && $_GET['action'] === 'elementor' )
+			) {
 			$this->render_backend( $rooms );
 		} else {
 			$this->render_frontend( $rooms );
 		}
+	}
+
+	protected function get_edit_url( $id ) {
+		$url = add_query_arg( [
+			'post'   => $id,
+			'action' => 'elementor',
+		], admin_url( 'post.php' ) );
+
+		return esc_url( $url );
 	}
 
 	protected function render_backend( $rooms ) {
@@ -55,7 +89,7 @@ class Archiv_Menu extends WP_Widget {
 		<ul class="archiv-menu">
 			<?php foreach ( $rooms as $room ) : ?>
 				<li class="archiv-menu__item">
-					<a class="archiv-menu__item-link" href="<?php echo esc_attr( $room['id'] ); ?>"><?php echo $room['title']; ?></a>
+					<a title="<?php esc_attr_e( 'Click to open on editor', 'archiv' ); ?>" class="archiv-menu__item-link" href="<?php echo $this->get_edit_url( $room['id'] ); ?>"><?php echo $room['title']; ?></a>
 				</li>
 			<?php endforeach; ?>
 		</ul>
