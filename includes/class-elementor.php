@@ -103,8 +103,6 @@ class Elementor {
 					$_updated[ $viewing_room['id'] ] = true;
 				}
 			}
-
-			file_put_contents( __DIR__ . '/data.txt', print_r( $_updated, 1 ) );
 		}
 	}
 
