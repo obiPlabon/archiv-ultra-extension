@@ -17,10 +17,10 @@ class XWP_Widget extends Widget_WordPress {
 		$this->add_control(
 			'wp',
 			[
-				'label' => __( 'Form', 'elementor' ),
-				'type' => Controls_Manager::WP_WIDGET,
-				'widget' => $this->get_name(),
-				'id_base' => $this->get_widget_instance()->id_base,
+				'label'       => __( 'Form', 'elementor' ),
+				'type'        => Controls_Manager::WP_WIDGET,
+				'widget'      => $this->get_name(),
+				'id_base'     => $this->get_widget_instance()->id_base,
 			]
 		);
 

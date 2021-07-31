@@ -75,6 +75,13 @@ class Widget extends Widget_Base {
 	}
 
 	protected function register_controls() {
+		$this->update_control(
+			'wp',
+			[
+				'render_type' => 'none',
+			]
+		);
+		
 		$this->start_controls_section(
 			'_viewing_room_nav',
 			[

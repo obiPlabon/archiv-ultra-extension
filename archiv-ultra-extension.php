@@ -36,6 +36,8 @@ final class Archiv_Ultra_Extension {
 		$this->plugin_url = plugin_dir_url( __FILE__ );
 		$this->plugin_dir = plugin_dir_path( __FILE__ );
 
+		$this->version = time();
+
 		add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ] );
 	}
 
@@ -64,6 +66,25 @@ final class Archiv_Ultra_Extension {
 
 	protected function register_hooks() {
 		add_action( 'elementor/widgets/widgets_registered', [ $this, 'register_widgets' ], 15 );
+
+		add_filter( 'widget_types_to_hide_from_legacy_widget_block', [ $this, 'hide_menu_widget_from_lagacy_widget_block' ] );
+
+		add_action( 'widgets_admin_page', [ $this, 'hide_menu_widget_from_classic_widgets_page' ] );
+	}
+
+	public function hide_menu_widget_from_lagacy_widget_block( $widget_types ) {
+		$widget_types[] = 'archiv-menu';
+		return $widget_types;
+	}
+	
+	public function hide_menu_widget_from_classic_widgets_page() {
+		global $wp_registered_widgets;
+
+		for ( $i = 1; $i <= 5; $i++ ) {
+			if ( isset( $wp_registered_widgets['archiv-menu-' . $i ] ) ) {
+				unset( $wp_registered_widgets['archiv-menu-' . $i ] );
+			}
+		}
 	}
 
 	public function register_widgets( $widgets_manager ) {
@@ -74,13 +95,13 @@ final class Archiv_Ultra_Extension {
 		// $page_widget = $wp_widget_factory->widgets['WP_Widget_Pages'];
 
 		// $widgets_manager->register_widget_type( new Widget() );
-		// $widgets_manager->unregister_widget_type( 'wp-widget-pages' );
+		$widgets_manager->unregister_widget_type( 'wp-widget-archiv-menu' );
 
-		// $widgets_manager->register_widget_type(
-		// 	new Archiv_Ultra_Extension\XWP_Widget( [], [
-		// 		'widget_name' => 'WP_Widget_Pages',
-		// 	] )
-		// );
+		$widgets_manager->register_widget_type(
+			new Archiv_Ultra_Extension\XWP_Widget( [], [
+				'widget_name' => '\Archiv_Ultra_Extension\WP_Menu_Widget',
+			] )
+		);
 	}
 
 	protected function include_files() {
