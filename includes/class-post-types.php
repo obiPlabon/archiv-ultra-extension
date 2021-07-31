@@ -82,3 +82,5 @@ class Post_Types {
 		register_post_type( self::VIEWING_ROOM, $args );
 	}
 }
+
+return new Post_Types();

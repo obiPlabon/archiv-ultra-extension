@@ -15,10 +15,6 @@
 
 defined( 'ABSPATH' ) || die();
 
-use Archiv_Ultra_Extension\Post_Types;
-use Archiv_Ultra_Extension\Auto_Post;
-use Archiv_Ultra_Extension\Widget;
-
 final class Archiv_Ultra_Extension {
 
 	public $version = '1.0.2';
@@ -43,7 +39,6 @@ final class Archiv_Ultra_Extension {
 
 	public function on_plugins_loaded() {
 		$this->include_files();
-		$this->init_classes();
 		$this->register_hooks();
 
 		// add_action( 'elementor/element/before_section_start', function( $widget, $section_id, $args ) {
@@ -108,12 +103,12 @@ final class Archiv_Ultra_Extension {
 		include_once $this->plugin_dir . 'includes/class-post-types.php';
 		include_once $this->plugin_dir . 'includes/class-auto-post.php';
 		include_once $this->plugin_dir . 'includes/class-wp-menu-widget.php';
+
+		if ( is_user_logged_in() ) {
+			include_once $this->plugin_dir . 'includes/class-ajax.php';
+		}
 	}
 
-	protected function init_classes() {
-		$this->post_types = new Post_Types();
-		$this->auto_post  = new Auto_Post();
-	}
 }
 
 function archiv_ultra_extension() {

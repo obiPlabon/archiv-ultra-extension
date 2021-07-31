@@ -313,3 +313,5 @@ class Auto_Post {
 		return delete_post_meta( $post_id, self::SUB_POSTS_META_KEY );
 	}
 }
+
+return new Auto_Post();
