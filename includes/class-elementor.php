@@ -26,21 +26,21 @@ class Elementor {
 	 */
 	public function enqueue_scripts() {
 		wp_enqueue_style(
-			'archiv-menu',
+			'archiv-menu-admin',
 			archiv_ultra_extension()->plugin_url . 'assets/admin-style.css',
 			[ 'elementor-select2' ],
 			archiv_ultra_extension()->version
 		);
 
 		wp_enqueue_script(
-			'archiv-menu',
+			'archiv-menu-admin',
 			archiv_ultra_extension()->plugin_url . 'assets/elementor-editor.js',
 			[ 'jquery', 'jquery-ui-sortable', 'jquery-elementor-select2' ],
 			archiv_ultra_extension()->version
 		);
 
 		wp_localize_script(
-			'archiv-menu',
+			'archiv-menu-admin',
 			'Archiv',
 			[
 				'action'   => 'archiv_get_viewing_rooms',

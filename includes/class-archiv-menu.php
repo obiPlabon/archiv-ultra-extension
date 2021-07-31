@@ -21,14 +21,14 @@ class Archiv_Menu extends WP_Widget {
 
 		add_action( 'admin_enqueue_scripts', function() {
 			wp_enqueue_style(
-				'archiv-menu',
+				'archiv-menu-admin',
 				archiv_ultra_extension()->plugin_url . 'assets/admin-style.css',
 				null,
 				archiv_ultra_extension()->version
 			);
 
 			wp_enqueue_script(
-				'archiv-menu',
+				'archiv-menu-admin',
 				archiv_ultra_extension()->plugin_url . 'assets/admin-script.js',
 				[ 'jquery', 'jquery-ui-sortable' ],
 				archiv_ultra_extension()->version
@@ -42,6 +42,15 @@ class Archiv_Menu extends WP_Widget {
 				[ 'elementor-frontend' ],
 				archiv_ultra_extension()->version,
 				true
+			);
+		} );
+
+		add_action( 'wp_enqueue_scripts', function() {
+			wp_enqueue_style(
+				'archiv-menu',
+				archiv_ultra_extension()->plugin_url . 'assets/style.css',
+				null,
+				archiv_ultra_extension()->version
 			);
 		} );
 	}
@@ -89,7 +98,7 @@ class Archiv_Menu extends WP_Widget {
 		<ul class="archiv-menu">
 			<?php foreach ( $rooms as $room ) : ?>
 				<li class="archiv-menu__item">
-					<a title="<?php esc_attr_e( 'Click to open on editor', 'archiv' ); ?>" class="archiv-menu__item-link" href="<?php echo $this->get_edit_url( $room['id'] ); ?>"><?php echo $room['title']; ?></a>
+					<a title="<?php esc_attr_e( 'Click to open on editor', 'archiv' ); ?>" class="archiv-menu__item-link <?php echo is_single( $room['id'] ) ? 'archiv--is-active' : ''; ?>" href="<?php echo $this->get_edit_url( $room['id'] ); ?>"><?php echo $room['title']; ?></a>
 				</li>
 			<?php endforeach; ?>
 		</ul>
@@ -103,7 +112,7 @@ class Archiv_Menu extends WP_Widget {
 		<ul class="archiv-menu">
 			<?php foreach ( $rooms as $room ) : ?>
 				<li class="archiv-menu__item">
-					<a class="archiv-menu__item-link" href="<?php the_permalink( $room ); ?>"><?php echo get_the_title( $room ); ?></a>
+					<a class="archiv-menu__item-link <?php echo is_single( $room->ID ) ? 'archiv--is-active' : ''; ?>" href="<?php the_permalink( $room ); ?>"><?php echo get_the_title( $room ); ?></a>
 				</li>
 			<?php endforeach; ?>
 		</ul>
