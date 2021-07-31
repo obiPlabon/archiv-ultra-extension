@@ -13,6 +13,18 @@ use Elementor\Widget_WordPress;
 use Elementor\Controls_Manager;
 
 class Widget_Factory extends Widget_WordPress {
+
+	public function get_icon() {
+		return 'eicon-navigation-horizontal';
+	}
+
+	public function get_keywords() {
+		return [ 'nav', 'menu', 'archiv', 'view', 'room' ];
+	}
+
+	public function get_categories() {
+		return [ 'basic' ];
+	}
 	
     protected function register_controls() {
 		$this->add_control(

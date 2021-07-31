@@ -9,6 +9,7 @@ namespace Archiv_Ultra_Extension;
 
 defined( 'ABSPATH' ) || die();
 
+use Elementor\Plugin;
 use WP_Widget;
 
 class Archiv_Menu extends WP_Widget {
@@ -36,14 +37,82 @@ class Archiv_Menu extends WP_Widget {
 	}
 
 	public function widget( $args, $instance ) {
-		echo '<pre style="font-size: 12px;">';
-		print_r( $instance );
-		echo '</pre>';
+		$rooms = ( ! empty( $instance['viewing_rooms'] ) && is_array( $instance['viewing_rooms'] ) ) ? $instance['viewing_rooms'] : [];
+
+		if ( empty( $rooms ) ) {
+			return '';
+		}
+
+		if ( is_admin() || ( isset( $_GET['action'] ) && $_GET['action'] === 'elementor' ) ) {
+			$this->render_backend( $rooms );
+		} else {
+			$this->render_frontend( $rooms );
+		}
+	}
+
+	protected function render_backend( $rooms ) {
+		?>
+		<ul class="archiv-menu">
+			<?php foreach ( $rooms as $room ) : ?>
+				<li class="archiv-menu__item">
+					<a class="archiv-menu__item-link" href="<?php echo esc_attr( $room['id'] ); ?>"><?php echo $room['title']; ?></a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+		<?php
+	}
+
+	protected function render_frontend( $rooms ) {
+		$room_ids = wp_list_pluck( $rooms, 'id' );
+		$rooms    = $this->get_viewing_rooms_by_ids( $room_ids );
+		?>
+		<ul class="archiv-menu">
+			<?php foreach ( $rooms as $room ) : ?>
+				<li class="archiv-menu__item">
+					<a class="archiv-menu__item-link" href="<?php the_permalink( $room ); ?>"><?php echo get_the_title( $room ); ?></a>
+				</li>
+			<?php endforeach; ?>
+		</ul>
+		<?php
+	}
+
+	protected function get_viewing_rooms_by_ids( $ids ) {
+		$args = [
+			'post_type'              => Post_Types::VIEWING_ROOM,
+			'post_status'            => 'publish',
+			'post__in'               => $ids,
+			'posts_per_page'         => count( $ids ),
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+			'cache_results'          => false,
+			'orderby'                => 'post__in',
+		];
+
+		$query = new \WP_Query( $args );
+
+		return $query->have_posts() ? $query->posts : [];
+	}
+
+	protected function transform_posts_to_settings( $posts ) {
+		return array_map( function( $post ) {
+			return [
+				'id'    => $post->ID,
+				'slug'  => $post->post_name,
+				'title' => $post->post_title,
+			];
+		}, $posts );
 	}
 
 	public function form( $instance ) {
-		$base_id  = ! empty( $instance['viewing_rooms_base'] ) ? $instance['viewing_rooms_base'] : 0;
-		$rooms = ( ! empty( $instance['viewing_rooms'] ) && is_array( $instance['viewing_rooms'] ) ) ? $instance['viewing_rooms'] : [];
+		$base_id   = ! empty( $instance['viewing_rooms_base'] ) ? $instance['viewing_rooms_base'] : 0;
+		$rooms     = ( ! empty( $instance['viewing_rooms'] ) && is_array( $instance['viewing_rooms'] ) ) ? $instance['viewing_rooms'] : [];
+		$base_room = [];
+
+		if ( ! empty( $rooms ) ) {
+			$room_ids = wp_list_pluck( $rooms, 'id' );
+			$rooms = $this->get_viewing_rooms_by_ids( $room_ids );
+			$rooms = $this->transform_posts_to_settings( $rooms );
+		}
 
 		if ( $base_id && ! empty( $rooms ) ) {
 			$base_room = wp_list_filter( $rooms, [ 'id' => $base_id ] );

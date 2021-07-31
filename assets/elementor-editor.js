@@ -62,12 +62,14 @@
                         var data = response.data[ index ],
                             $item = $( item );
 
-                        $item.find('.archiv-fields__field-title').val( data.title ).trigger('change');
-                        $item.find('.archiv-fields__field-slug').val( data.slug );
-                        $item.find('.archiv-fields__field-id').val( data.id );
-                    } );
+                        $item.find( '.archiv-fields__field-title' ).prop( 'value', data.title )
+                        $item.find( '.archiv-fields__field-slug' ).prop( 'value', data.slug );
+                        $item.find( '.archiv-fields__field-id' ).prop( 'value', data.id );
+                    } )
+                    .find( 'input' )
+                    .trigger( 'change' );
                 } );
-            } );
+            } ).trigger( 'change' );
         } );
     } );
 } ( jQuery ) );
