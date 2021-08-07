@@ -135,14 +135,18 @@ class Auto_Post {
 		return $actions;
 	}
 
-	public function on_trash_post( $post_id ) {
-		$post = get_post( $post_id );
+	public function is_bulk_request() {
+		return ( isset( $_REQUEST['post'] ) && is_array( $_REQUEST['post'] ) );
+	}
 
-		if ( empty( $post ) || get_post_type( $post ) !== Post_Types::VIEWING_ROOM ) {
-			return false;
+	public function on_trash_post( $post_id ) {
+		if ( $this->is_bulk_request() ) {
+			return;
 		}
 
-		if ( ! empty( $post->post_parent ) ) {
+		$post = get_post( $post_id );
+
+		if ( empty( $post ) || ! empty( $post->post_parent ) || get_post_type( $post ) !== Post_Types::VIEWING_ROOM ) {
 			return false;
 		}
 
@@ -150,17 +154,18 @@ class Auto_Post {
 			'post_type'              => Post_Types::VIEWING_ROOM,
 			'posts_per_page'         => -1,
 			'post_parent'            => $post_id,
-			'update_post_meta_cache' => false,
+			'update_post_meta_cache' => true,
 			'update_post_term_cache' => false,
+			'fields'                 => 'ids'
 		];
 
 		$query = new \WP_Query( $args );
-
+		
 		if ( $query->have_posts() ) {
 			remove_action( 'wp_trash_post', [ $this, 'on_trash_post' ] );
 
-			foreach ( $query->posts as $post ) {
-				wp_trash_post( $post->ID );
+			foreach ( $query->posts as $viewing_room_id ) {
+				wp_trash_post( $viewing_room_id );
 			}
 
 			add_action( 'wp_trash_post', [ $this, 'on_trash_post' ] );
@@ -210,13 +215,12 @@ class Auto_Post {
 			$posts = get_posts( $args );
 
 			foreach ( $posts as $post ) {
-				$title     = wp_trim_words( esc_html( $post->post_title ), 2, '...' );
-				$sub_title = wp_trim_words( esc_html( $post->post_title ), 3, '' );
-
+				$title = $post->post_parent ? $post->post_title : self::get_base_post();
+				$title = wp_trim_words( esc_html( $title ), 3, '...' );
 				$children[] = [
 					'title'     => $title,
 					'id'        => "elementor_edit_doc_{$post->ID}",
-					'sub_title' => ( $post->ID !== $parent_post_id ? $sub_title : $this->get_base_post() ),
+					'sub_title' => 'archiv',
 					'href'      => $this->get_edit_url( $post->ID ),
 				];
 			}
@@ -238,26 +242,32 @@ class Auto_Post {
 
 		unset( $post_states['elementor'] );
 		
-		$post_states['archiv-base-post'] = $this->get_base_post();
+		$post_states['archiv-base-post'] = self::get_base_post();
 
 		return $post_states;
 	}
 
 	public function on_create_post( $post_id, $post ) {
-		if ( get_post_type( $post_id ) !== Post_Types::VIEWING_ROOM || wp_is_post_autosave( $post_id ) ) {
+		if ( $this->is_bulk_request() ) {
 			return false;
 		}
 
-		if ( empty( $post ) || 'auto-draft' === $post->post_status || $post->post_parent ) {
+		if ( empty( $post ) || get_post_type( $post_id ) !== Post_Types::VIEWING_ROOM ) {
 			return false;
 		}
 
+		if ( wp_is_post_autosave( $post_id ) || 'auto-draft' === $post->post_status || $post->post_parent ) {
+			return false;
+		}
+
+		// Copy acf fields and update sub posts status
 		$sub_posts = self::get_sub_posts( $post_id );
 		if ( ! empty( $sub_posts ) && count( $sub_posts ) > 0 ) {
 			// Get all acf fields from parent
 			$acf_fields = function_exists( 'get_fields' ) ? get_fields( $post_id ) : [];
 
 			foreach ( $sub_posts as $sub_post ) {
+				// Update sub posts status
 				wp_update_post( [
 					'ID'          => $sub_post,
 					'post_status' => $post->post_status,
@@ -271,13 +281,14 @@ class Auto_Post {
 				}
 			}
 
-			return;
+			return true;
 		}
 
+		// Create sub posts on first post creation.
 		remove_action( 'save_post', [ $this, 'on_create_post' ] );
 
 		$sub_posts = [];
-		foreach ( $this->get_sub_posts_title() as $sub_post ) {
+		foreach ( self::get_sub_posts_title() as $sub_post ) {
 			$sub_posts[] = wp_insert_post( [
 				'post_title'     => $sub_post,
 				'post_author'    => $post->post_author,
@@ -294,14 +305,14 @@ class Auto_Post {
 		add_action( 'save_post', [ $this, 'on_create_post' ], 10, 2 );
 	}
 
-	protected function get_sub_posts_title() {
+	public static function get_sub_posts_title() {
 		return [
 			'IMMERSION',
 			'LIST OF WORKS',
 		];
 	}
 
-	protected function get_base_post() {
+	public static function get_base_post() {
 		return 'ACADEMIC';
 	}
 
