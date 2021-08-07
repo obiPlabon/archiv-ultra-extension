@@ -3,7 +3,7 @@
  * Plugin Name: Archiv Ultra Extension
  * Description: Your extended Archiv functionality lives here. So please do not uninstall or delete it without being confirmed.
  * Author: obiPlabon
- * Version: 1.0.2
+ * Version: 1.1.0
  * Author URI: https://obiplabon.im/
  * License:      GNU General Public License v2 or later
  * License URI:  http://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || die();
 
 final class Archiv_Ultra_Extension {
 
-	public $version = '1.0.2';
+	public $version = '1.1.0';
 
 	private static $instance = null;
 
