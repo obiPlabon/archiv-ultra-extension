@@ -288,7 +288,7 @@ class Auto_Post {
 		remove_action( 'save_post', [ $this, 'on_create_post' ] );
 
 		$sub_posts = [];
-		foreach ( self::get_sub_posts_title() as $sub_post ) {
+		foreach ( self::get_sub_posts_title() as $index => $sub_post ) {
 			$sub_posts[] = wp_insert_post( [
 				'post_title'     => $sub_post,
 				'post_author'    => $post->post_author,
@@ -297,10 +297,14 @@ class Auto_Post {
 				'post_type'      => $post->post_type,
 				'post_password'  => $post->post_password,
 				'post_parent'    => $post_id,
+				'meta_input'     => [
+					'_archiv_menu_index' => ( $index + 1 ) // 0 index is the parent post
+				]
 			] );
 		}
-
+		
 		self::update_sub_posts( $post_id, $sub_posts );
+		update_post_meta( $post_id, '_archiv_menu_index', 0 );
 
 		add_action( 'save_post', [ $this, 'on_create_post' ], 10, 2 );
 	}

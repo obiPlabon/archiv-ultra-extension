@@ -91,7 +91,10 @@ class Elementor {
 				}
 
 				$args = [
-					'ID' => $viewing_room['id']
+					'ID'         => $viewing_room['id'],
+					'meta_input' => [
+						'_archiv_menu_index' => $viewing_room['_index']
+					]
 				];
 
 				$args['post_title'] = ! empty( $viewing_room['title'] ) ? sanitize_text_field( $viewing_room['title'] ) : '';

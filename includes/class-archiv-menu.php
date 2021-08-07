@@ -84,15 +84,6 @@ class Archiv_Menu extends WP_Widget {
 		}
 	}
 
-	protected function get_edit_url( $id ) {
-		$url = add_query_arg( [
-			'post'   => $id,
-			'action' => 'elementor',
-		], admin_url( 'post.php' ) );
-
-		return esc_url( $url );
-	}
-
 	protected function render_backend( $rooms ) {
 		?>
 		<ul class="archiv-menu">
@@ -111,13 +102,19 @@ class Archiv_Menu extends WP_Widget {
 			return;
 		}
 
+		echo '<pre>';
+		print_r( get_queried_object_id() );
+		echo '</pre>';
+
 		$room_ids = wp_list_pluck( $rooms, 'id' );
 		$rooms    = $this->get_viewing_rooms_by_ids( $room_ids );
 		?>
 		<ul class="archiv-menu">
-			<?php foreach ( $rooms as $room ) : ?>
+			<?php foreach ( $rooms as $room ) :
+				$title = ( $room->post_parent ? get_the_title( $room ) : Auto_Post::get_base_post() );
+				?>
 				<li class="archiv-menu__item">
-					<a class="archiv-menu__item-link <?php echo is_single( $room->ID ) ? 'archiv--is-active' : ''; ?>" href="<?php the_permalink( $room ); ?>"><?php echo get_the_title( $room ); ?></a>
+					<a class="archiv-menu__item-link <?php echo is_single( $room->ID ) ? 'archiv--is-active' : ''; ?>" href="<?php the_permalink( $room ); ?>"><?php echo $title; ?></a>
 				</li>
 			<?php endforeach; ?>
 		</ul>
@@ -152,45 +149,31 @@ class Archiv_Menu extends WP_Widget {
 	}
 
 	public function form( $instance ) {
-		$base_id   = ! empty( $instance['viewing_rooms_base'] ) ? $instance['viewing_rooms_base'] : 0;
-		$rooms     = ( ! empty( $instance['viewing_rooms'] ) && is_array( $instance['viewing_rooms'] ) ) ? $instance['viewing_rooms'] : [];
-		$base_room = [];
 
-		if ( ! empty( $rooms ) ) {
-			$room_ids = wp_list_pluck( $rooms, 'id' );
-			$rooms = $this->get_viewing_rooms_by_ids( $room_ids );
-			$rooms = $this->transform_posts_to_settings( $rooms );
+		$post_id = isset( $_REQUEST['initial_document_id'] ) ? absint( $_REQUEST['initial_document_id'] ) : 0;
+
+		if ( empty( $post_id ) || get_post_type( $post_id ) !== Post_Types::VIEWING_ROOM ) {
+			printf(
+				'<p class="archiv-info archiv-info--warning"><i class="eicon-info-circle-o"></i> %s</p>',
+				esc_html__( 'This post does not support Viewing Room menu.', 'archiv' )
+			);
+			return;
 		}
 
-		if ( $base_id && ! empty( $rooms ) ) {
-			$base_room = wp_list_filter( $rooms, [ 'id' => $base_id ] );
-			$base_room = ! empty( $base_room ) ? current( $base_room ) : [];
-		}
 		?>
-		<div class="archiv-fields__group archiv-fields__group-base">
-			<label for="<?php echo esc_attr( $this->get_field_id( 'viewing_rooms_base' ) ); ?>"><?php echo esc_html__( 'Select Viewing Room:', 'archiv' ); ?></label>
-			<select
-				class="widefat archiv-viewing-rooms-select2"
-				id="<?php echo esc_attr( $this->get_field_id( 'viewing_rooms_base' ) ); ?>"
-				name="<?php echo esc_attr( $this->get_field_name( 'viewing_rooms_base' ) ); ?>">
-				<?php
-				if ( ! empty( $base_room ) ) {
-					printf( '<option selected value="%s">%s</option>', $base_room['id'], $base_room['title'] );
-				}
-				?>
-			</select>
-		</div>
 		<p class="archiv-info"><i class="eicon-info-circle-o"></i> <?php esc_html_e( 'You can easily drag to sort the items.', 'archiv' ); ?></p>
 		<ul class="archiv-fields">
 			<?php
-			$_data = [
-				'id'    => 0,
-				'slug'  => '',
-				'title' => '',
-			];
+			$posts = $this->get_collection_by_item_id( $post_id );
 
-			for ( $i = 0; $i < 3; $i++ ) {
-				$this->render_menu_item( $i, isset( $rooms[ $i ] ) ? $rooms[ $i ] : $_data );
+			foreach ( $posts as $_key => $post ) {
+				$data = [
+					'id'    => $post->ID,
+					'slug'  => $post->post_name,
+					'title' => $post->post_title,
+				];
+
+				$this->render_menu_item( $_key, $data );
 			}
 			?>
 		</ul>
@@ -210,7 +193,7 @@ class Archiv_Menu extends WP_Widget {
 				<input class="widefat archiv-fields__field-slug" id="<?php echo esc_attr( $this->get_field_id( $prefix . '[slug]' ) ); ?>" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[slug]' ) ); ?>" type="text" value="<?php echo esc_attr( $data['slug'] ); ?>">
 			</div>
 			<input class="archiv-fields__field-id" type="hidden" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[id]' ) ); ?>" value="<?php echo esc_attr( $data['id'] ); ?>">
-			<input class="archiv-fields__field-index" type="hidden" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[_index]' ) ); ?>" value="<?php echo ( $index + 1 ); ?>">
+			<input class="archiv-fields__field-index" type="hidden" name="<?php echo esc_attr( $this->get_field_name( $prefix . '[_index]' ) ); ?>" value="<?php echo $index; ?>">
 		</li>
 		<?php
 	}
@@ -225,6 +208,52 @@ class Archiv_Menu extends WP_Widget {
 
 	public function sort_items( $item_a, $item_b ) {
 		return ( $item_a['_index'] - $item_b['_index']);
+	}
+
+	protected function get_collection_by_item_id( $post_id ) {
+		$post_ids = [];
+		$post     = get_post( $post_id );
+
+		if ( empty( $post ) || $post->post_type !== Post_Types::VIEWING_ROOM ) {
+			return $post_ids;
+		}
+
+		$parent_post_id = $post->ID;
+		if ( ! empty( $post->post_parent ) ) {
+			$parent_post_id = $post->post_parent;
+		}
+		
+		$post_ids = [ $parent_post_id ];
+		$_ids     = Auto_Post::get_sub_posts( $parent_post_id );
+
+		if ( ! empty( $_ids ) ) {
+			$post_ids = array_merge( $post_ids, $_ids );
+		}
+
+		$args = [
+			'post_type'              => Post_Types::VIEWING_ROOM,
+			'post_status'            => 'any',
+			'post__in'               => $post_ids,
+			'posts_per_page'         => count( $post_ids ),
+			'meta_key'               => '_archiv_menu_index',
+			'orderby'                => 'meta_value_num',
+			'order'                  => 'ASC',
+			'update_post_term_cache' => false,
+			'no_found_rows'          => true,
+		];
+
+		$query = new \WP_Query( $args );
+
+		return $query->have_posts() ? $query->posts : [];
+	}
+
+	protected function get_edit_url( $id ) {
+		$url = add_query_arg( [
+			'post'   => $id,
+			'action' => 'elementor',
+		], admin_url( 'post.php' ) );
+
+		return esc_url( $url );
 	}
 }
 
