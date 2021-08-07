@@ -106,6 +106,11 @@ class Archiv_Menu extends WP_Widget {
 	}
 
 	protected function render_frontend( $rooms ) {
+		// Show only on viewing rooms
+		if ( ! is_singular( Post_Types::VIEWING_ROOM ) ) {
+			return;
+		}
+
 		$room_ids = wp_list_pluck( $rooms, 'id' );
 		$rooms    = $this->get_viewing_rooms_by_ids( $room_ids );
 		?>
