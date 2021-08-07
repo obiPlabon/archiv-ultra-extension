@@ -55,59 +55,67 @@ class Archiv_Menu extends WP_Widget {
 		} );
 	}
 
-	protected function have_rooms( $rooms ) {
-		if ( empty( $rooms ) ) {
-			return false;
-		}
-
-		$have_rooms = array_filter( $rooms, function( $room ) {
-			return ! empty( $room['id'] );
-		} );
-
-		return count( $have_rooms );
-	}
-
 	public function widget( $args, $instance ) {
-		$rooms = ( ! empty( $instance['viewing_rooms'] ) && is_array( $instance['viewing_rooms'] ) ) ? $instance['viewing_rooms'] : [];
-
-		if ( ! $this->have_rooms( $rooms ) ) {
-			return;
-		}
-
 		if ( is_admin() ||
 			! empty( $_GET['elementor-preview'] ) ||
 			( isset( $_GET['action'] ) && $_GET['action'] === 'elementor' )
 			) {
-			$this->render_backend( $rooms );
+			$this->render_backend();
 		} else {
-			$this->render_frontend( $rooms );
+			$this->render_frontend();
 		}
 	}
 
-	protected function render_backend( $rooms ) {
+	protected function render_backend() {
+		// Dig deep and find the post id
+		if ( isset( $_REQUEST['post'], $_REQUEST['action'] ) && $_REQUEST['action'] === 'elementor' && ! empty( $_REQUEST['post'] ) ) {
+			// Elementor main editor
+			$post_id = absint( $_REQUEST['post'] );
+		} elseif ( isset( $_REQUEST['elementor-preview'] ) && ! empty( $_REQUEST['elementor-preview'] ) ) {
+			// Elementor header / footer editor
+			$post_id = absint( $_REQUEST['elementor-preview'] );
+		} elseif ( isset( $_REQUEST['initial_document_id'], $_REQUEST['action'] ) && $_REQUEST['action'] === 'elementor_ajax' && ! empty( $_REQUEST['initial_document_id'] ) ) {
+			// Elementor widget render ajax request
+			$post_id = absint( $_REQUEST['initial_document_id'] );
+		} else {
+			$post_id = get_queried_object_id();
+		}
+
+		// Return for unsupported post types
+		if ( get_post_type( $post_id ) !== Post_Types::VIEWING_ROOM ) {
+			return;
+		}
+
+		$rooms = $this->get_collection_by_item_id( $post_id );
 		?>
 		<ul class="archiv-menu">
 			<?php foreach ( $rooms as $room ) : ?>
 				<li class="archiv-menu__item">
-					<a title="<?php esc_attr_e( 'Click to open on editor', 'archiv' ); ?>" class="archiv-menu__item-link <?php echo is_single( $room['id'] ) ? 'archiv--is-active' : ''; ?>" href="<?php echo $this->get_edit_url( $room['id'] ); ?>"><?php echo $room['title']; ?></a>
+					<?php
+					$title = ( $room->post_parent ? get_the_title( $room ) : Auto_Post::get_base_post() );
+
+					printf(
+						'<a title="%s" class="archiv-menu__item-link %s" href="%s">%s</a>',
+						esc_attr__( 'Click to open on editor', 'archiv' ),
+						( $room->ID === $post_id ? 'archiv--is-active' : '' ),
+						$this->get_edit_url( $room->ID ),
+						esc_html( $title )
+					);
+					?>
 				</li>
 			<?php endforeach; ?>
 		</ul>
 		<?php
 	}
 
-	protected function render_frontend( $rooms ) {
+	protected function render_frontend() {
 		// Show only on viewing rooms
 		if ( ! is_singular( Post_Types::VIEWING_ROOM ) ) {
 			return;
 		}
 
-		echo '<pre>';
-		print_r( get_queried_object_id() );
-		echo '</pre>';
-
-		$room_ids = wp_list_pluck( $rooms, 'id' );
-		$rooms    = $this->get_viewing_rooms_by_ids( $room_ids );
+		$status = ( current_user_can( 'edit_posts' ) ? 'any' : 'publish' );
+		$rooms  = $this->get_collection_by_item_id( get_queried_object_id(), $status );
 		?>
 		<ul class="archiv-menu">
 			<?php foreach ( $rooms as $room ) :
@@ -121,35 +129,7 @@ class Archiv_Menu extends WP_Widget {
 		<?php
 	}
 
-	protected function get_viewing_rooms_by_ids( $ids ) {
-		$args = [
-			'post_type'              => Post_Types::VIEWING_ROOM,
-			'post_status'            => 'publish',
-			'post__in'               => $ids,
-			'posts_per_page'         => count( $ids ),
-			'update_post_meta_cache' => false,
-			'update_post_term_cache' => false,
-			'cache_results'          => false,
-			'orderby'                => 'post__in',
-		];
-
-		$query = new \WP_Query( $args );
-
-		return $query->have_posts() ? $query->posts : [];
-	}
-
-	protected function transform_posts_to_settings( $posts ) {
-		return array_map( function( $post ) {
-			return [
-				'id'    => $post->ID,
-				'slug'  => $post->post_name,
-				'title' => $post->post_title,
-			];
-		}, $posts );
-	}
-
 	public function form( $instance ) {
-
 		$post_id = isset( $_REQUEST['initial_document_id'] ) ? absint( $_REQUEST['initial_document_id'] ) : 0;
 
 		if ( empty( $post_id ) || get_post_type( $post_id ) !== Post_Types::VIEWING_ROOM ) {
@@ -210,7 +190,7 @@ class Archiv_Menu extends WP_Widget {
 		return ( $item_a['_index'] - $item_b['_index']);
 	}
 
-	protected function get_collection_by_item_id( $post_id ) {
+	protected function get_collection_by_item_id( $post_id, $status = 'any' ) {
 		$post_ids = [];
 		$post     = get_post( $post_id );
 
@@ -232,7 +212,7 @@ class Archiv_Menu extends WP_Widget {
 
 		$args = [
 			'post_type'              => Post_Types::VIEWING_ROOM,
-			'post_status'            => 'any',
+			'post_status'            => $status,
 			'post__in'               => $post_ids,
 			'posts_per_page'         => count( $post_ids ),
 			'meta_key'               => '_archiv_menu_index',

@@ -14,12 +14,14 @@
     -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
-.archiv-menu .archiv-menu__item:not(:last-child)::after {
-    content: "■";
-    line-height: 20px;
-    font-size: 10px;
-    color: #fafafa;
-    margin-right: 10px;
+@media screen and (min-width: 768px) {
+    .archiv-menu .archiv-menu__item:not(:last-child)::after {
+        content: "■";
+        line-height: 20px;
+        font-size: 10px;
+        color: #fafafa;
+        margin-right: 10px;
+    }
 }
 
 .archiv-menu .archiv-menu__item-link {
