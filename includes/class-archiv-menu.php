@@ -60,13 +60,15 @@ class Archiv_Menu extends WP_Widget {
 			! empty( $_GET['elementor-preview'] ) ||
 			( isset( $_GET['action'] ) && $_GET['action'] === 'elementor' )
 			) {
-			$this->render_backend();
+			$this->render_backend( $instance );
 		} else {
 			$this->render_frontend();
 		}
 	}
 
-	protected function render_backend() {
+	protected function render_backend( $instance ) {
+		$is_widget_rendering = false;
+
 		// Dig deep and find the post id
 		if ( isset( $_REQUEST['post'], $_REQUEST['action'] ) && $_REQUEST['action'] === 'elementor' && ! empty( $_REQUEST['post'] ) ) {
 			// Elementor main editor
@@ -76,7 +78,9 @@ class Archiv_Menu extends WP_Widget {
 			$post_id = absint( $_REQUEST['elementor-preview'] );
 		} elseif ( isset( $_REQUEST['initial_document_id'], $_REQUEST['action'] ) && $_REQUEST['action'] === 'elementor_ajax' && ! empty( $_REQUEST['initial_document_id'] ) ) {
 			// Elementor widget render ajax request
-			$post_id = absint( $_REQUEST['initial_document_id'] );
+			$post_id             = absint( $_REQUEST['initial_document_id'] );
+			$current_action_data = Plugin::$instance->common->get_component( 'ajax' )->get_current_action_data();
+			$is_widget_rendering = ( $current_action_data['action'] === 'render_widget' );
 		} else {
 			$post_id = get_queried_object_id();
 		}
@@ -86,7 +90,13 @@ class Archiv_Menu extends WP_Widget {
 			return;
 		}
 
-		$rooms = $this->get_collection_by_item_id( $post_id );
+		// Could be an optimzied solution, need more testing
+		if ( $is_widget_rendering && ! empty( $instance['viewing_rooms'] ) && is_array( $instance['viewing_rooms'] ) ) {
+			$post_ids = wp_list_pluck( $instance['viewing_rooms'], 'id' );
+			$rooms    = $this->get_collection_by_item_ids( $post_ids );
+		} else {
+			$rooms = $this->get_collection_by_item_id( $post_id );
+		}
 		?>
 		<ul class="archiv-menu">
 			<?php foreach ( $rooms as $room ) : ?>
@@ -217,6 +227,23 @@ class Archiv_Menu extends WP_Widget {
 			'posts_per_page'         => count( $post_ids ),
 			'meta_key'               => '_archiv_menu_index',
 			'orderby'                => 'meta_value_num',
+			'order'                  => 'ASC',
+			'update_post_term_cache' => false,
+			'no_found_rows'          => true,
+		];
+
+		$query = new \WP_Query( $args );
+
+		return $query->have_posts() ? $query->posts : [];
+	}
+
+	protected function get_collection_by_item_ids( $post_ids = [] ) {
+		$args = [
+			'post_type'              => Post_Types::VIEWING_ROOM,
+			'post_status'            => 'any',
+			'post__in'               => $post_ids,
+			'posts_per_page'         => count( $post_ids ),
+			'orderby'                => 'post__in',
 			'order'                  => 'ASC',
 			'update_post_term_cache' => false,
 			'no_found_rows'          => true,

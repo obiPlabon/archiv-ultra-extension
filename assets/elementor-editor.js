@@ -6,6 +6,7 @@
             var $container = $( '.archiv-fields' );
     
             $container.sortable( {
+                items: '.archiv-fields__single:not(:first-child)',
                 axis: 'y',
                 stop: function( event, ui ) {
                     $( '.archiv-fields__single' ).each( function( index, item ) {
