@@ -3,7 +3,7 @@
  * Plugin Name: Archiv Ultra Extension
  * Description: Your extended Archiv functionality lives here. So please do not uninstall or delete it without being confirmed.
  * Author: obiPlabon
- * Version: 1.1.0
+ * Version: 2.0.0
  * Author URI: https://obiplabon.im/
  * License:      GNU General Public License v2 or later
  * License URI:  http://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || die();
 
 final class Archiv_Ultra_Extension {
 
-	public $version = '1.1.0';
+	public $version = '2.0.0';
 
 	private static $instance = null;
 
@@ -32,7 +32,7 @@ final class Archiv_Ultra_Extension {
 		$this->plugin_url = plugin_dir_url( __FILE__ );
 		$this->plugin_dir = plugin_dir_path( __FILE__ );
 
-		$this->version = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? time() : '1.0.2';
+		$this->version = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? time() : $this->version;
 
 		add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ], 20 );
 	}
