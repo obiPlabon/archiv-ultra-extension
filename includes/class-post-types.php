@@ -14,10 +14,14 @@ class Post_Types {
 	const VIEWING_ROOM = 'viewing-room';
 
 	public function __construct() {
-		add_action( 'init', [ $this, 'register_viewing_room' ] );
+		add_action( 'init', [ $this, 'register_viewing_room' ], 99 );
 	}
 
 	public function register_viewing_room() {
+		if ( post_type_exists( self::VIEWING_ROOM ) ) {
+			return;
+		}
+
 		$labels = [
 			'name'                     => __( 'Viewing Rooms', 'archiv-core' ),
 			'singular_name'            => __( 'Viewing Room', 'archiv-core' ),
