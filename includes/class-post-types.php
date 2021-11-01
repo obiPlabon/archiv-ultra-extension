@@ -15,6 +15,14 @@ class Post_Types {
 
 	public function __construct() {
 		add_action( 'init', [ $this, 'register_viewing_room' ], 99 );
+		add_action( 'pre_get_posts', [ $this, 'update_viewing_room_order' ] );
+	}
+
+	public function update_viewing_room_order( $query ) {
+		if ( is_admin() && $query->get( 'post_type' ) === self::VIEWING_ROOM ) {
+			$query->set( 'order', 'desc' );
+			$query->set( 'orderby', 'menu_order date' );
+		}
 	}
 
 	public function register_viewing_room() {
