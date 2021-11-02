@@ -310,14 +310,17 @@ class Auto_Post {
 	}
 
 	public static function get_sub_posts_title() {
+		$options = get_option( 'archiv_settings' );
+
 		return [
-			'IMMERSION',
-			'LIST OF WORKS',
+			! empty( $options['viewing_room_2'] ) ? $options['viewing_room_2'] : 'IMMERSION',
+			! empty( $options['viewing_room_3'] ) ? $options['viewing_room_3'] : 'LIST OF WORKS',
 		];
 	}
 
 	public static function get_base_post() {
-		return 'ACADEMIC';
+		$options = get_option( 'archiv_settings' );
+		return ( ! empty( $options['viewing_room_1'] ) ? $options['viewing_room_1'] : 'ACADEMIC' );
 	}
 
 	public static function get_sub_posts( $post_id ) {

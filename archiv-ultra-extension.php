@@ -122,6 +122,10 @@ final class Archiv_Ultra_Extension {
 			// include_once $this->plugin_dir . 'includes/class-ajax.php';
 			include_once $this->plugin_dir . 'includes/class-elementor.php';
 		}
+
+		if ( is_admin() ) {
+			include_once $this->plugin_dir . 'includes/class-settings.php';
+		}
 	}
 
 }
