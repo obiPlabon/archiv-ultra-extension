@@ -102,7 +102,7 @@ class Archiv_Menu extends WP_Widget {
 			<?php foreach ( $rooms as $room ) : ?>
 				<li class="archiv-menu__item">
 					<?php
-					$title = ( $room->post_parent ? get_the_title( $room ) : Auto_Post::get_base_post() );
+					$title = ( $room->post_parent ? get_the_title( $room ) : Auto_Post::get_base_post_title( $room ) );
 
 					printf(
 						'<a title="%s" class="archiv-menu__item-link %s" href="%s">%s</a>',
@@ -129,7 +129,7 @@ class Archiv_Menu extends WP_Widget {
 		?>
 		<ul class="archiv-menu">
 			<?php foreach ( $rooms as $room ) :
-				$title = ( $room->post_parent ? get_the_title( $room ) : Auto_Post::get_base_post() );
+				$title = ( $room->post_parent ? get_the_title( $room ) : Auto_Post::get_base_post_title( $room ) );
 				?>
 				<li class="archiv-menu__item">
 					<a class="archiv-menu__item-link <?php echo is_single( $room->ID ) ? 'archiv--is-active' : ''; ?>" href="<?php the_permalink( $room ); ?>"><?php echo $title; ?></a>

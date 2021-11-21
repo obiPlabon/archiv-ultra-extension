@@ -83,6 +83,7 @@ class Settings {
 					'field_key'   => $field_key,
 					'label_for'   => $args['label_for'],
 					'description' => $args['description'],
+					'default'     => $args['default'],
 				]
 			);
 		}
@@ -91,7 +92,7 @@ class Settings {
 	function render_text_field( $args ) {
 		// Get the value of the setting we've registered with register_setting()
 		$options = get_option( self::SETTINGS_KEY );
-		$value   = isset( $options[ $args['field_key'] ] ) ? $options[ $args['field_key'] ] : $args['default'];
+		$value   = ( ! empty( $options[ $args['field_key'] ] ) ? $options[ $args['field_key'] ] : $args['default'] );
 		?>
 		<input
 			id="<?php echo esc_attr( $args['label_for'] ); ?>"
@@ -107,7 +108,7 @@ class Settings {
 
 	public function sanitize_callback( $values ) {
 		foreach ( $this->get_fields() as $field_key => $args ) {
-			if ( ! isset( $values[ $field_key ] ) ) {
+			if ( empty( $values[ $field_key ] ) ) {
 				continue;
 			}
 

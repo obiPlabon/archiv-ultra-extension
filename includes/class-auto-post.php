@@ -215,7 +215,11 @@ class Auto_Post {
 			$posts = get_posts( $args );
 
 			foreach ( $posts as $post ) {
-				$title = $post->post_parent ? $post->post_title : self::get_base_post();
+				if ( $post->post_parent ) {
+					$title = $post->post_title;
+				} else {
+					$title = self::get_base_post_title( $post );
+				}
 				$title = wp_trim_words( esc_html( $title ), 3, '...' );
 				$children[] = [
 					'title'     => $title,
@@ -242,9 +246,22 @@ class Auto_Post {
 
 		unset( $post_states['elementor'] );
 		
-		$post_states['archiv-base-post'] = self::get_base_post();
+		$post_states['archiv-base-post'] = self::get_base_post_title( $post );
 
 		return $post_states;
+	}
+
+	public static function get_base_post_title( $post ) {
+		$title = get_post_meta( $post->ID, '_archiv_title', true );
+		if ( empty( $title ) ) {
+			return get_the_title( $post );
+		}
+
+		$title = wptexturize( $title );
+		$title = convert_chars( $title );
+		$title = trim( $title );
+		
+		return $title;
 	}
 
 	public function on_create_post( $post_id, $post ) {
@@ -305,6 +322,7 @@ class Auto_Post {
 		
 		self::update_sub_posts( $post_id, $sub_posts );
 		update_post_meta( $post_id, '_archiv_menu_index', 0 );
+		update_post_meta( $post_id, '_archiv_title', sanitize_text_field( self::get_base_post() ) );
 
 		add_action( 'save_post', [ $this, 'on_create_post' ], 10, 2 );
 	}
